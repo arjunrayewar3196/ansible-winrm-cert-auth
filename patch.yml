@@ -1,0 +1,22 @@
+---
+- name: Check for Software Updates and Apply Patches on Windows Machines
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - name: Check for Updates
+      win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+          - UpdateRollups
+        state: searched
+      register: updates_result
+
+    - name: Install Updates
+      win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+          - UpdateRollups
+        state: installed
+      when: updates_result.updates | length > 0
