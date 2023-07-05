@@ -1,0 +1,14 @@
+---
+- name: Create File and Folder on Windows Machine
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - name: Create Folder
+      win_file:
+        path: "C:\\path\\to\\folder"
+        state: directory
+
+    - name: Create File
+      win_file:
+        path: "C:\\path\\to\\folder\\file.txt"
+        state: touch
