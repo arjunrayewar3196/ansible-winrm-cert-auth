@@ -1,0 +1,18 @@
+---
+- name: Create Users on Windows Machines
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - name: Create User
+      win_user:
+        name: "{{ item.username }}"
+        password: "{{ item.password }}"
+        state: present
+        groups: "{{ item.groups }}"
+      loop:
+        - username: user1
+          password: password1
+          groups: "Administrators"
+        - username: user2
+          password: password2
+          groups: "Users"
