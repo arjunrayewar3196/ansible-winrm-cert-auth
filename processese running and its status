@@ -1,0 +1,26 @@
+- name: Check Installed RPM Packages and Their Status
+  hosts: localhost
+  become: true
+  gather_facts: yes
+
+  tasks:
+    - name: Check RPM Package Status
+      ansible.builtin.shell: |
+        rpm -qa --queryformat '%{NAME} %{VERSION}\n'
+        rpm -qa | while read package; do
+          if pgrep -f $package &> /dev/null; then
+            echo "$package Running"
+          else
+            echo "$package Not Running"
+          fi
+        done
+      register: rpm_packages
+      changed_when: false
+
+    - name: Create a list of installed RPM packages and their status
+      ansible.builtin.set_fact:
+        rpm_packages_list: "{{ rpm_packages.stdout_lines | list }}"
+
+    - name: Display Installed RPM Packages and Their Status
+      ansible.builtin.debug:
+        var: rpm_packages_list
