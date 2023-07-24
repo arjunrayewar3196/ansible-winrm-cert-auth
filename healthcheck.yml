@@ -1,0 +1,35 @@
+- name: Perform Health Check
+  hosts: localhost
+  become: true
+  gather_facts: yes
+
+  tasks:
+    - name: Check CPU Utilization
+      ansible.builtin.shell: "top -bn 1 | grep 'Cpu(s)'"
+      register: cpu_output
+
+    - name: Display CPU Utilization
+      ansible.builtin.debug:
+        msg:
+          - "{{ cpu_output.stdout }}"
+
+    - name: Check Disk Usage
+      ansible.builtin.shell: "df -h"
+      register: disk_output
+
+    - name: Display Disk Usage
+      ansible.builtin.debug:
+        msg:
+          - "Disk Usage:"
+          - "{{ disk_output.stdout_lines }}"
+
+    - name: Check for Locked Services or Jobs using LSOF
+      ansible.builtin.shell: "lsof | grep '(deleted)'"
+      register: lsof_output
+      failed_when: false
+
+    - name: Display Locked Services or Jobs
+      ansible.builtin.debug:
+        msg:
+          - "Locked Services or Jobs:"
+          - "{{ lsof_output.stdout_lines }}"
