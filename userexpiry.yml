@@ -1,0 +1,29 @@
+- name: Gather Non-System Users and Expiry Dates
+  hosts: localhost
+  become: true
+  gather_facts: yes
+
+  tasks:
+    - name: Get list of non-system users
+      ansible.builtin.shell: awk -F ':' '$7 != "/sbin/nologin" {print $1}' /etc/passwd
+      register: non_system_users_output
+
+    - name: Create a list of non-system users
+      ansible.builtin.set_fact:
+        non_system_users: "{{ non_system_users_output.stdout_lines }}"
+
+    - name: Get expiry date for each non-system user
+      ansible.builtin.shell: "chage -l '{{ item }}' | grep 'Account expires' | awk -F ': ' '{print $2}'"
+      loop: "{{ non_system_users }}"
+      register: expiry_dates
+      become: true
+      become_user: root
+
+    - name: Extract expiry date of each user
+      ansible.builtin.set_fact:
+        non_system_users_expiry: "{{ non_system_users_expiry | default([]) + [ {'user': item.item, 'expiry_date': item.stdout_lines[0] | default('never')} ] }}"
+      loop: "{{ expiry_dates.results }}"
+
+    - name: Display non-system users and their expiry dates
+      ansible.builtin.debug:
+        var: non_system_users_expiry
