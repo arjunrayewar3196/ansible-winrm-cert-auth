@@ -1,0 +1,15 @@
+---
+- name: Gather top 5 processes based on CPU utilization
+  hosts: localhost
+  become: true
+  gather_facts: yes
+
+  tasks:
+    - name: Get process list and CPU utilization
+      shell: "ps -eo pid,%cpu,etimes,cmd --sort=-%cpu | head -6 | tail -5"
+      register: process_info
+
+    - name: Display top 5 processes
+      debug:
+        msg: "Process {{ item.split()[3] }} (PID: {{ item.split()[0] }}) - CPU Utilization: {{ item.split()[1] }}% - Running Duration: {{ '%02d:%02d:%02d' | format((item.split()[2] | int / 3600), ((item.split()[2] | int % 3600) / 60), (item.split()[2] | int % 60)) }}"
+      with_items: "{{ process_info.stdout_lines }}"
