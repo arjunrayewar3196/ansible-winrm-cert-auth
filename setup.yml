@@ -1,0 +1,25 @@
+---
+- name: Gather System Facts
+  hosts: localhost
+  gather_facts: yes
+
+  tasks:
+    - name: Store Facts in List
+      set_fact:
+        system_facts_list:
+          - ipv4_address: "{{ ansible_default_ipv4.address | default('') }}"
+            mac_address: "{{ ansible_default_ipv4.macaddress | default('') }}"
+            architecture: "{{ ansible_architecture | default('') }}"
+            bios_version: "{{ ansible_bios_version | default('') }}"
+            os_family: "{{ ansible_os_family | default('') }}"
+            kernel_version: "{{ ansible_kernel_version | default('') }}"
+            cpu_model: "{{ ansible_processor[2] | default('') }}"
+
+    - name: Convert Facts to JSON format
+      set_fact:
+        json_data: "{{ system_facts_list | to_json }}"
+
+    - name: Write JSON data to CSV file
+      copy:
+        content: "{{ json_data }}"
+        dest: /home/ec2-user/file.csv
